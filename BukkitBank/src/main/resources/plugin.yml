@@ -1,0 +1,13 @@
+name: ${project.name}
+version: ${project.version}
+main: ${main.class}
+
+commands:
+  bank:
+    usage: /<command> [balance/deposit/withdraw/transfer] [amount] [player]
+    permission: bank.bank
+
+permissions:
+  bank.bank:
+    description: Gives access to the bank command and the banking system.
+    default: true

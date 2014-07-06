@@ -1,0 +1,9 @@
+mysql:
+  hostname: localhost
+  port: 3306
+  schema: bank
+  username: root
+  password: abc123
+
+bank:
+  currency: GOLD_INGOT
