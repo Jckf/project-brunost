@@ -6,6 +6,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.*;
+import java.util.Map;
 import java.util.UUID;
 
 public class Bank extends JavaPlugin {
@@ -177,8 +178,16 @@ public class Bank extends JavaPlugin {
             this.logTransaction(player, player, amount);
 
             // Remove from inventory.
-            // Todo: Verify that all items were removed.
-            inventory.removeItem(new ItemStack(this.currency, amount));
+            Map<Integer, ItemStack> failed = inventory.removeItem(new ItemStack(this.currency, amount));
+            if (!failed.isEmpty()) {
+                // Todo: This should never happen, but if it does the log will be incorrect. Figure it out...
+
+                this.getLogger().warning("Failed to remove all items from inventory during deposit! Decreasing amount...");
+
+                for (ItemStack stack : failed.values()) {
+                    amount -= stack.getAmount();
+                }
+            }
 
             // Add to account.
             this.selectBalance.setString(0, player.toString());
