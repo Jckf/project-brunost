@@ -57,27 +57,27 @@ public class Bank extends JavaPlugin {
         try {
             if (this.updateBalance != null)
                 this.updateBalance.close();
-        } catch (SQLException exception) { }
+        } catch (SQLException ignored) { }
 
         try {
             if (this.insertBalance != null)
                 this.insertBalance.close();
-        } catch (SQLException exception) { }
+        } catch (SQLException ignored) { }
 
         try {
             if (this.selectBalance != null)
                 this.selectBalance.close();
-        } catch (SQLException exception) { }
+        } catch (SQLException ignored) { }
 
         try {
             if (this.insertTransaction != null)
                 this.insertTransaction.close();
-        } catch (SQLException exception) { }
+        } catch (SQLException ignored) { }
 
         try {
             if (this.db != null)
                 this.db.close();
-        } catch (SQLException exception) { }
+        } catch (SQLException ignored) { }
     }
 
     private Connection getDb() {
