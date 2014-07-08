@@ -318,8 +318,65 @@ public class Bank extends JavaPlugin {
         if (this.getBalance(source) < amount)
             throw new InsufficientFundsException();
 
-        // Todo: Log in transaction history.
-        // Todo: Remove from source account.
-        // Todo: Add to target account.
+        if (this.getDb() == null)
+            throw new SQLException("Database object is null!");
+
+        boolean success = false;
+
+        try {
+            this.db.setAutoCommit(false);
+
+            this.logTransaction(source, target, amount);
+
+            this.updateBalance.setString(0, source.toString());
+            this.updateBalance.setInt(1, this.getBalance(source) - amount);
+
+            if (this.updateBalance.executeUpdate() != 1)
+                throw new SQLException("Unexpected number of affected rows!");
+
+            this.updateBalance.clearParameters();
+
+            this.selectBalance.setString(0, target.toString());
+
+            ResultSet result = this.selectBalance.executeQuery();
+
+            if (result.next()) {
+                this.updateBalance.setString(0, target.toString());
+                this.updateBalance.setInt(1, this.getBalance(target) + amount);
+
+                if (this.updateBalance.executeUpdate() != 1)
+                    throw new SQLException("Unexpected number of affected rows!");
+
+                this.updateBalance.clearParameters();
+            } else {
+                this.insertBalance.setString(0, target.toString());
+                this.insertBalance.setInt(1, amount);
+
+                if (this.insertBalance.executeUpdate() != 1)
+                    throw new SQLException("Unexpected number of affected rows!");
+
+                this.insertBalance.clearParameters();
+            }
+
+            this.db.commit();
+
+            success = true;
+        } catch (SQLException exception) {
+            this.getLogger().warning("SQLException while transferring currency!");
+            exception.printStackTrace();
+
+            try {
+                if (this.db != null)
+                    this.db.rollback();
+            } catch (SQLException exception2) {
+                this.getLogger().warning("SQLException while rolling back transaction!");
+                exception2.printStackTrace();
+            }
+        } finally {
+            this.db.setAutoCommit(true);
+        }
+
+        if (!success)
+            throw new SQLException("Unknown error!");
     }
 }
