@@ -14,6 +14,7 @@ public class Bank extends JavaPlugin {
 
     private PreparedStatement insertTransaction;
 
+    private PreparedStatement testSelect;
     private PreparedStatement selectBalance;
     private PreparedStatement insertBalance;
     private PreparedStatement updateBalance;
@@ -90,12 +91,13 @@ public class Bank extends JavaPlugin {
     private Connection getDb() {
         if (this.db != null) {
             try {
-                if (!this.db.isClosed())
+                if (this.db.isClosed())
+                    throw new SQLException("An existing connection was closed.");
+
+                ResultSet result = this.testSelect.executeQuery();
+                if (result.next())
                     return this.db;
-            } catch (SQLException exception) {
-                this.getLogger().warning("SQLException while invoking isClosed()!");
-                exception.printStackTrace();
-            }
+            } catch (SQLException ignored) { }
 
             // It wasn't null, but we couldn't use it. Be gone, evildoer!
             this.db = null;
@@ -110,6 +112,7 @@ public class Bank extends JavaPlugin {
             );
 
             // New connection means new statements.
+            this.testSelect = this.db.prepareStatement("SELECT 1");
             this.insertTransaction = this.db.prepareStatement("INSERT INTO transactions (source, target, amount) VALUES (?, ?, ?)");
             this.selectBalance = this.db.prepareStatement("SELECT amount FROM accounts WHERE player=?");
             this.insertBalance = this.db.prepareStatement("INSERT INTO accounts (player, amount) VALUES (?, ?)");
