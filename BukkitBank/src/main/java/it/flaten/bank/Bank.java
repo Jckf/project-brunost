@@ -80,6 +80,13 @@ public class Bank extends JavaPlugin {
         } catch (SQLException ignored) { }
     }
 
+    /**
+     * Initiate a database connection.
+     *
+     * An existing connection will be returned if available.
+     *
+     * @return A valid database connection, or null if the database is unavailable.
+     */
     private Connection getDb() {
         if (this.db != null) {
             try {
@@ -121,6 +128,18 @@ public class Bank extends JavaPlugin {
         return this.db;
     }
 
+    /**
+     * Logs a currency transaction to the database.
+     *
+     * If source and target accounts are the same UUID, the entry represents either a deposit or withdrawal, depending
+     * on the amount logged. A positive value means deposit (increases the account balance), while a negative value
+     * means withdrawal (decreases the account balance).
+     *
+     * @param source UUID of source account.
+     * @param target UUID of target account.
+     * @param amount Amount of currency transferred.
+     * @throws SQLException if the database backend throws one, or if the database has inconsistencies.
+     */
     private void logTransaction(UUID source, UUID target, int amount) throws SQLException {
         this.getDb();
 
@@ -134,6 +153,15 @@ public class Bank extends JavaPlugin {
         this.insertTransaction.clearParameters();
     }
 
+    /**
+     * Get the current balance of an account.
+     *
+     * Treats non-existent accounts as empty.
+     *
+     * @param player UUID of account to check.
+     * @return Current account balance.
+     * @throws SQLException if the database backend throws one.
+     */
     public int getBalance(UUID player) throws SQLException {
         this.getDb();
 
@@ -149,6 +177,16 @@ public class Bank extends JavaPlugin {
         return result.getInt(0);
     }
 
+    /**
+     * Deposit currency from inventory to account.
+     *
+     * Moves currency from the given player's inventory to the account with matching UUID.
+     *
+     * @param player UUID of player and account to use.
+     * @param amount Amount of currency to deposit. Must be greater than 0.
+     * @throws SQLException if the database is unavailable, throws an exception, or has inconsistencies.
+     * @throws InsufficientFundsException if the player does not have enough currency in the inventory.
+     */
     public void deposit(UUID player, int amount) throws SQLException, InsufficientFundsException {
         if (amount <= 0)
             throw new IllegalArgumentException("Amount must be greater than zero!");
@@ -240,6 +278,17 @@ public class Bank extends JavaPlugin {
             throw new SQLException("Unknown error!");
     }
 
+    /**
+     * Withdraw currency from an account to inventory.
+     *
+     * Moves currency from the given account to the player with matching UUID's account.
+     *
+     * @param player UUID of player and account to use.
+     * @param amount Amount of currency to withdraw. Must be greater than 0.
+     * @throws SQLException if the database is unavailable, throws an exception, or has inconsistencies.
+     * @throws InsufficientFundsException if the player does not have enough currency in the account.
+     * @throws CrampedInventoryException if the player does not have enough room in the inventory.
+     */
     public void withdraw(UUID player, int amount) throws SQLException, InsufficientFundsException, CrampedInventoryException {
         if (amount <= 0)
             throw new IllegalArgumentException("Amount must be greater than zero!");
@@ -309,6 +358,17 @@ public class Bank extends JavaPlugin {
             throw new SQLException("Unknown error!");
     }
 
+    /**
+     * Transfer currency between two accounts.
+     *
+     * Moves currency from the given source account to the given target account.
+     *
+     * @param source UUID of source account.
+     * @param target UUID of target account.
+     * @param amount Amount of currency to transfer.
+     * @throws SQLException if the database is unavailable, throws an exception, or has inconsistencies.
+     * @throws InsufficientFundsException if there is too little currency in the source account.
+     */
     public void transfer(UUID source, UUID target, int amount) throws SQLException, InsufficientFundsException {
         if (amount <= 0)
             throw new IllegalArgumentException("Amount must be greater than zero!");
