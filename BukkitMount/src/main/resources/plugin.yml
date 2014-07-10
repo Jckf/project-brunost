@@ -1,0 +1,25 @@
+name: ${project.name}
+version: ${project.version}
+main: ${main.class}
+
+commands:
+  mount:
+    usage: /<command> [player] [player]
+    permission: mount.mount
+  unmount:
+    usage: /<command> [player]
+    permission: mount.unmount
+
+permissions:
+  mount.mount.self:
+    description: Lets a player mount to players.
+    default: op
+  mount.mount.other:
+    description: Lets a player mount other players to players.
+    default: op
+  mount.unmount.self:
+    description: Lets a player unmount from players.
+    default: op
+  mount.unmount.other:
+    description: Lets a player unmount other players from players.
+    default: op
