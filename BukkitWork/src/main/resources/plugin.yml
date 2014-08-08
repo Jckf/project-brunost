@@ -1,0 +1,19 @@
+name: ${project.name}
+version: ${project.version}
+main: ${main.class}
+
+commands:
+  setwork:
+    usage: /<command>
+    permission: work.setwork
+  work:
+    usage: /<command>
+    permission: work.work
+
+permissions:
+  work.setwork:
+    description: Gives access to the setwork command.
+    default: op
+  work.work:
+    description: Gives access to the work command.
+    default: false
