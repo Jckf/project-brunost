@@ -177,7 +177,7 @@ public class Bank extends JavaPlugin {
         if (!result.next())
             return 0;
 
-        return result.getInt(0);
+        return result.getInt(1);
     }
 
     /**
