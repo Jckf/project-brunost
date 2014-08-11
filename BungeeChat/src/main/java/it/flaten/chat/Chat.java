@@ -21,6 +21,7 @@ public class Chat extends Plugin {
     private File configFile;
     private Configuration config;
     private final Map<String, List<String>> channels = new HashMap<>();
+    private final Map<String, String> replyTo = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -55,13 +56,30 @@ public class Chat extends Plugin {
         this.getLogger().info("Registering listeners...");
 
         this.getProxy().getPluginManager().registerListener(this, new ChatListener(this));
+
+        this.getLogger().info("Registering commands...");
+
+        this.getProxy().getPluginManager().registerCommand(this, new TellCommand(this));
+        this.getProxy().getPluginManager().registerCommand(this, new ReplyCommand(this));
+
+        for (String command : this.config.getStringList("commands")) {
+            this.getProxy().getPluginManager().registerCommand(this, new ChatCommand(this, command));
+        }
     }
 
     @Override
     public void onDisable() {
+        this.getLogger().info("Unregistering commands...");
+
+        this.getProxy().getPluginManager().unregisterCommands(this);
+
         this.getLogger().info("Unregistering listeners...");
 
         this.getProxy().getPluginManager().unregisterListeners(this);
+    }
+
+    public Configuration getConfig() {
+        return this.config;
     }
 
     /**
@@ -133,20 +151,122 @@ public class Chat extends Plugin {
         return this.channels.get(channel);
     }
 
+    public void setReplyTo(ProxiedPlayer player, ProxiedPlayer target) {
+        this.replyTo.put(target.getName(), player.getName());
+    }
+
+    public ProxiedPlayer getReplyTo(ProxiedPlayer player) {
+        if (!this.replyTo.containsKey(player.getName()))
+            return null;
+
+        return this.getProxy().getPlayer(this.replyTo.get(player.getName()));
+    }
+
+    /**
+     * Format a public chat message.
+     *
+     * @param player Player who sent the message.
+     * @param message The message itself.
+     * @return A BaseComponent representing the formatted message.
+     */
     public BaseComponent formatMessage(ProxiedPlayer player, String message) {
-        // Todo: Lookup permissions to add prefixes.
+        BaseComponent[] components = TextComponent.fromLegacyText(
+            ChatColor.translateAlternateColorCodes(
+                '&',
+                this.config.getString("formats.public", "&cThe public chat is not configured properly.")
+            ).replace("%name%", player.getDisplayName())
+             .replace("%message%", message)
+        );
 
-        TextComponent nameComponent = new TextComponent(player.getName() + ": ");
-        nameComponent.setColor(ChatColor.WHITE);
-        nameComponent.setBold(true);
-
-        TextComponent messageComponent = new TextComponent(message);
-        messageComponent.setColor(ChatColor.GRAY);
-
-        TextComponent output = new TextComponent("");
-        output.addExtra(nameComponent);
-        output.addExtra(messageComponent);
+        BaseComponent output = new TextComponent("");
+        for (BaseComponent component : components) {
+            output.addExtra(component);
+        }
 
         return output;
+    }
+
+    /**
+     * Format a private message.
+     *
+     * @param source Player who sent the message.
+     * @param target Player who will receive the message.
+     * @param message The message itself.
+     * @return A BaseComponent representing the formatted message.
+     */
+    public BaseComponent formatMessage(ProxiedPlayer source, ProxiedPlayer target, String message) {
+        BaseComponent[] components = TextComponent.fromLegacyText(
+            ChatColor.translateAlternateColorCodes(
+                '&',
+                this.config.getString("formats.private", "&cPrivate messages are not configured properly.")
+            ).replace("%source%", source.getDisplayName())
+             .replace("%target%", target.getDisplayName())
+             .replace("%message%", message)
+        );
+
+        BaseComponent output = new TextComponent("");
+        for (BaseComponent component : components) {
+            output.addExtra(component);
+        }
+
+        return output;
+    }
+
+    /**
+     * Format a command message.
+     *
+     * @param player Player who sent the message.
+     * @param command Command channel to broadcast on.
+     * @param message The message itself.
+     * @return A BaseComponent representing the formatted message.
+     */
+    public BaseComponent formatMessage(ProxiedPlayer player, String command, String message) {
+        BaseComponent[] components = TextComponent.fromLegacyText(
+            ChatColor.translateAlternateColorCodes(
+                '&',
+                this.config.getString("formats.commands." + command, "&cChannel command \"" + command + "\" is not configured properly.")
+            ).replace("%name%", player.getDisplayName())
+             .replace("%message%", message)
+        );
+
+        BaseComponent output = new TextComponent("");
+        for (BaseComponent component : components) {
+            output.addExtra(component);
+        }
+
+        return output;
+    }
+
+    /**
+     * Broadcast to all servers on a given channel.
+     *
+     * @param channel Channel to broadcast on.
+     * @param player Player who sent the message.
+     * @param message The message itself.
+     */
+    public void channelBroadcast(String channel, ProxiedPlayer player, String message) {
+        // Todo: Fire an event here to let other plugins know we are going to send a message to a channel.
+
+        for (String serverName : this.getMembers(channel)) {
+            for (ProxiedPlayer target : this.getProxy().getServerInfo(serverName).getPlayers()) {
+                target.sendMessage(this.formatMessage(player, message));
+            }
+        }
+    }
+
+    /**
+     * Broadcast a message to players on a given command channel.
+     *
+     * @param command Command channel to broadcast on.
+     * @param player Player who sent the message.
+     * @param message The message itself.
+     */
+    public void commandBroadcast(String command, ProxiedPlayer player, String message) {
+        for (ProxiedPlayer target : this.getProxy().getPlayers()) {
+            if (!target.hasPermission("chat.command." + command))
+                continue;
+
+            target.sendMessage(this.formatMessage(player, command, message));
+        }
     }
 }

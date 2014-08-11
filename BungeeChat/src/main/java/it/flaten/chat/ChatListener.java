@@ -40,15 +40,8 @@ public class ChatListener implements Listener {
             return;
         }
 
-        // Are woo looping too much here?
         for (String channel : channels) {
-            // Todo: Fire an event here to let other plugins know we are going to send a message to a channel.
-
-            for (String serverName : this.chat.getMembers(channel)) {
-                for (ProxiedPlayer target : this.chat.getProxy().getServerInfo(serverName).getPlayers()) {
-                    target.sendMessage(this.chat.formatMessage(player, event.getMessage()));
-                }
-            }
+            this.chat.channelBroadcast(channel, player, event.getMessage());
         }
     }
 }

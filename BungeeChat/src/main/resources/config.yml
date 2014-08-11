@@ -1,3 +1,12 @@
 channels:
   global:
     - pvp
+
+commands:
+  - t
+
+formats:
+  public: '&f&l%name%&r&f: &r&7%message%'
+  private: '&5&l%source%&r&5 -> &l%target%&r&5: %message%'
+  commands:
+    t: '&a[Trade] &l%name%&r&a: %message%'
