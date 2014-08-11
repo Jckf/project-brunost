@@ -238,8 +238,8 @@ public class Bank extends JavaPlugin {
             this.selectBalance.clearParameters();
 
             if (result.next()) {
-                this.updateBalance.setString(1, player.toString());
-                this.updateBalance.setInt(2, this.getBalance(player) + amount);
+                this.updateBalance.setInt(1, this.getBalance(player) + amount);
+                this.updateBalance.setString(2, player.toString());
 
                 if (this.updateBalance.executeUpdate() != 1)
                     throw new SQLException("Unexpected number of affected rows!");
@@ -326,8 +326,8 @@ public class Bank extends JavaPlugin {
 
             this.logTransaction(player, player, - amount);
 
-            this.updateBalance.setString(1, player.toString());
-            this.updateBalance.setInt(2, this.getBalance(player) - amount);
+            this.updateBalance.setInt(1, this.getBalance(player) - amount);
+            this.updateBalance.setString(2, player.toString());
 
             if (this.updateBalance.executeUpdate() != 1)
                 throw new SQLException("Unexpected number of affected rows!");
@@ -391,8 +391,8 @@ public class Bank extends JavaPlugin {
 
             this.logTransaction(source, target, amount);
 
-            this.updateBalance.setString(1, source.toString());
-            this.updateBalance.setInt(2, this.getBalance(source) - amount);
+            this.updateBalance.setInt(1, this.getBalance(source) - amount);
+            this.updateBalance.setString(2, source.toString());
 
             if (this.updateBalance.executeUpdate() != 1)
                 throw new SQLException("Unexpected number of affected rows!");
@@ -404,8 +404,8 @@ public class Bank extends JavaPlugin {
             ResultSet result = this.selectBalance.executeQuery();
 
             if (result.next()) {
-                this.updateBalance.setString(1, target.toString());
-                this.updateBalance.setInt(2, this.getBalance(target) + amount);
+                this.updateBalance.setInt(1, this.getBalance(target) + amount);
+                this.updateBalance.setString(2, target.toString());
 
                 if (this.updateBalance.executeUpdate() != 1)
                     throw new SQLException("Unexpected number of affected rows!");
