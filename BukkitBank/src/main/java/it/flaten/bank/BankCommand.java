@@ -32,7 +32,7 @@ public class BankCommand implements TabExecutor {
 
         String subCommand = args[0];
 
-        String[] subArgs = {};
+        String[] subArgs = new String[args.length - 1];
         if (args.length > 1)
             System.arraycopy(args, 1, subArgs, 0, args.length - 1);
 
