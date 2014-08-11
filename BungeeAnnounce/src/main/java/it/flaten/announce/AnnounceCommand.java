@@ -1,5 +1,6 @@
 package it.flaten.announce;
 
+import com.google.common.base.Joiner;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -7,7 +8,6 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
-import org.apache.commons.lang3.StringUtils;
 
 public class AnnounceCommand extends Command {
     private final Announce announce;
@@ -125,7 +125,7 @@ public class AnnounceCommand extends Command {
         System.arraycopy(args, 3, message, 0, args.length - 3);
 
         this.announce.scheduleAnnouncement(
-            this.announce.parseMessage(StringUtils.join(message, " ")),
+            this.announce.parseMessage(Joiner.on(" ").join(message)),
             initialDelay,
             interval
         );
