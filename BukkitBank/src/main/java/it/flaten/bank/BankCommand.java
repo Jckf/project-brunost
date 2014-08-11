@@ -92,6 +92,9 @@ public class BankCommand implements TabExecutor {
 
         try {
             this.bank.deposit(player.getUniqueId(), amount);
+        } catch (IllegalArgumentException exception) {
+            player.sendMessage(ChatColor.RED + "Amount to deposit must be greater than zero.");
+            return true;
         } catch (InsufficientFundsException exception) {
             player.sendMessage(ChatColor.RED + "Insufficient funds.");
             return true;
@@ -118,6 +121,9 @@ public class BankCommand implements TabExecutor {
 
         try {
             this.bank.withdraw(player.getUniqueId(), amount);
+        } catch (IllegalArgumentException exception) {
+            player.sendMessage(ChatColor.RED + "Amount to withdraw must be greater than zero.");
+            return true;
         } catch (InsufficientFundsException exception) {
             player.sendMessage(ChatColor.RED + "Insufficient funds.");
             return true;
@@ -153,6 +159,9 @@ public class BankCommand implements TabExecutor {
 
         try {
             this.bank.transfer(player.getUniqueId(), target.getUniqueId(), amount);
+        } catch (IllegalArgumentException exception) {
+            player.sendMessage(ChatColor.RED + "Amount to transfer must be greater than zero.");
+            return true;
         } catch (InsufficientFundsException exception) {
             player.sendMessage(ChatColor.RED + "Insufficient funds.");
             return true;
