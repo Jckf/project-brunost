@@ -39,6 +39,8 @@ public class MountCommand implements CommandExecutor {
 
         try {
             this.mount.mount(top.getUniqueId(), bottom.getUniqueId());
+        } catch (IllegalArgumentException exception) {
+            sender.sendMessage(ChatColor.RED + "You cannot mount someone on themselves!");
         } catch (PlayerOfflineException ignored) {
             // We should never end up here.
         } catch (OccupiedException exception) {

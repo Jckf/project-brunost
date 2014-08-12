@@ -31,6 +31,9 @@ public class Mount extends JavaPlugin {
      * @throws OccupiedException if the bottom player already has a passenger.
      */
     public void mount(UUID top, UUID bottom) throws PlayerOfflineException, OccupiedException {
+        if (top.equals(bottom))
+            throw new IllegalArgumentException("Cannot mount an entity on itself.");
+
         Player pTop = this.getServer().getPlayer(top);
 
         if (pTop == null)
