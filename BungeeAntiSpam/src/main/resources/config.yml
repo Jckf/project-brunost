@@ -1,0 +1,17 @@
+# Number of messages to remember per player.
+history: 10
+
+# Number of seconds before repetitions are allowed.
+repeat-delay: 90
+
+# Number of repetitions before the player is muted.
+repeat-max: 5
+
+# Number of seconds that must have passed since the oldest message kept in history.
+# history / quick-time = 10 / 5 = 2 messages allowed per second.
+# Warning: This will not trigger until the history is full, so be careful not to
+# set that number too high.
+quick-time: 5
+
+# Number of seconds until muted players are unmuted.
+mute-timeout: 300
