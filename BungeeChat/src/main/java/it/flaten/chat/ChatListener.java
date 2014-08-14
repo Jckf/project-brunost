@@ -17,7 +17,7 @@ public class ChatListener implements Listener {
 
     @EventHandler
     public void onChat(ChatEvent event) {
-        if (event.isCommand())
+        if (event.isCommand() || event.isCancelled())
             return;
 
         // I am not sure that sender and receiver can be anything other than ProxiedPlayer
