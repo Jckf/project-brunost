@@ -28,14 +28,20 @@ public class AntiSpamListener implements Listener {
 
     @EventHandler
     public void onChat(ChatEvent event) {
+        if (event.isCancelled())
+            return;
+
         if (!(event.getSender() instanceof ProxiedPlayer))
             return;
 
-        event.setCancelled(!this.antiSpam.handleMessage((ProxiedPlayer) event.getSender(), event.getMessage()));
+        ProxiedPlayer player = (ProxiedPlayer) event.getSender();
+
+        event.setCancelled(!this.antiSpam.handleMessage(player, event.getMessage()));
     }
 
     @EventHandler
     public void onLogout(PlayerDisconnectEvent event) {
-        this.antiSpam.clearLog(event.getPlayer());
+        if (!this.antiSpam.isMuted(event.getPlayer()))
+            this.antiSpam.clearLog(event.getPlayer());
     }
 }

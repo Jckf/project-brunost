@@ -2,7 +2,7 @@
 history: 10
 
 # Number of seconds before repetitions are allowed.
-repeat-delay: 90
+repeat-delay: 60
 
 # Number of repetitions before the player is muted.
 repeat-max: 5
