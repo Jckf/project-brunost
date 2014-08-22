@@ -91,7 +91,8 @@ public class AntiSpam extends Plugin {
      */
     public boolean handleMessage(ProxiedPlayer player, String message) {
         if (message.startsWith("/")) {
-            String command = message.substring(0, message.indexOf(" "));
+            int i = message.indexOf(" ");
+            String command = message.substring(1, i > 0 ? i : message.length() - 1);
 
             boolean filter = false;
 
