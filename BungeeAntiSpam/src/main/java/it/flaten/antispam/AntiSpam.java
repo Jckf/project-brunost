@@ -90,6 +90,21 @@ public class AntiSpam extends Plugin {
      * @return True if the message should be allowed. False if it is spam.
      */
     public boolean handleMessage(ProxiedPlayer player, String message) {
+        if (message.startsWith("/")) {
+            String command = message.substring(0, message.indexOf(" "));
+
+            boolean filter = false;
+
+            if (this.config.getStringList("commands.*").contains(command))
+                filter = true;
+
+            if (this.config.getStringList("commands." + player.getServer().getInfo().getName()).contains(command))
+                filter = true;
+
+            if (!filter)
+                return true;
+        }
+
         // Make sure we have somewhere to store chat history for this player.
         if (!this.log.containsKey(player.getUniqueId()))
             this.log.put(player.getUniqueId(), new HashMap<Long, String>());

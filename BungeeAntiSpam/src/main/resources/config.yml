@@ -15,3 +15,12 @@ quick-time: 5
 
 # Number of seconds until muted players are unmuted.
 mute-timeout: 300
+
+# Commands to include in chat filtering.
+commands:
+  *:
+    - tell
+  pvp:
+    - msg
+    - m
+    - r
