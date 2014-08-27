@@ -1,0 +1,11 @@
+name: ${project.name}
+version: ${project.version}
+main: ${main.class}
+
+permissions:
+  joinquit.join:
+    description: Display join messages for users with this permission.
+    default: true
+  joinquit.quit:
+    description: Display quit messages for users with this permission.
+    default: true
