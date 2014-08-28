@@ -1,0 +1,12 @@
+# Server groups. Join and quit messages are only displayed when initially connecting,
+# when switching servers between groups, or disconnecting completely.
+# A single wildcard is allowed to simplify single-group setups, but should NOT be used
+# together with server names. Defining a server in multiple groups has undefined behavior.
+groups:
+  default:
+    - '*'
+
+# Messages to broadcast on group change.
+messages:
+  join: '&a%name%&r&a joined the game.'
+  quit: '&c%name%&r&c left the game.'
