@@ -245,11 +245,12 @@ public class Chat extends Plugin {
      * @param message The message itself.
      */
     public void channelBroadcast(String channel, ProxiedPlayer player, String message) {
-        // Todo: Fire an event here to let other plugins know we are going to send a message to a channel.
+        this.getProxy().getPluginManager().callEvent(new ChatBroadcastEvent(channel, player, message));
 
+        BaseComponent formattedMessage = this.formatMessage(player, message);
         for (String serverName : this.getMembers(channel)) {
             for (ProxiedPlayer target : this.getProxy().getServerInfo(serverName).getPlayers()) {
-                target.sendMessage(this.formatMessage(player, message));
+                target.sendMessage(formattedMessage);
             }
         }
     }

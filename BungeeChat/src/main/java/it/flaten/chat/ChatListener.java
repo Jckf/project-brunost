@@ -1,8 +1,11 @@
 package it.flaten.chat;
 
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteStreams;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.ChatEvent;
+import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
@@ -43,5 +46,21 @@ public class ChatListener implements Listener {
         for (String channel : channels) {
             this.chat.channelBroadcast(channel, player, event.getMessage());
         }
+    }
+
+    @EventHandler
+    public void onPluginMessage(PluginMessageEvent event) {
+        if (!event.getTag().equals("BungeeCord"))
+            return;
+
+        ByteArrayDataInput in = ByteStreams.newDataInput(event.getData());
+
+        if (!in.readUTF().equals("Prefix"))
+            return;
+
+        // Thug life.
+        ProxiedPlayer player = (ProxiedPlayer) event.getReceiver();
+
+        player.setDisplayName(in.readUTF() + player.getName());
     }
 }
