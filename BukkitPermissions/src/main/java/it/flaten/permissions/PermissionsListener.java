@@ -13,7 +13,13 @@ public class PermissionsListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onPlayerLogin(PlayerLoginEvent event) {
-        this.permissions.requestNodes(event.getPlayer());
+    public void onPlayerLogin(final PlayerLoginEvent event) {
+        // Hack.
+        this.permissions.getServer().getScheduler().scheduleSyncDelayedTask(this.permissions, new Runnable() {
+            @Override
+            public void run() {
+                permissions.setPermissions(event.getPlayer());
+            }
+        }, 1);
     }
 }

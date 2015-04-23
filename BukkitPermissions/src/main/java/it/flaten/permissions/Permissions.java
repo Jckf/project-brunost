@@ -4,17 +4,17 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Map;
+import java.util.Set;
 
 public class Permissions extends JavaPlugin {
     @Override
     public void onEnable() {
-        this.getLogger().info("Binding to BungeeCord PMC...");
+        this.getLogger().info("Binding to PMC...");
 
-        this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new PermissionsPluginMessageListener(this));
-        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "Permissions");
 
         this.getLogger().info("Registering event handlers...");
 
@@ -27,24 +27,23 @@ public class Permissions extends JavaPlugin {
 
         HandlerList.unregisterAll(this);
 
-        this.getLogger().info("Unbinding from BungeeCord PMC...");
+        this.getLogger().info("Unbinding from PMC...");
 
         this.getServer().getMessenger().unregisterOutgoingPluginChannel(this);
-        this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
     }
 
-    public void requestNodes(Player player) {
+    public void setPermissions(Player player) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
-        out.writeUTF("Permissions");
-        out.writeUTF(player.getUniqueId().toString());
+        Set<PermissionAttachmentInfo> perms = player.getEffectivePermissions();
 
-        player.sendPluginMessage(this, "BungeeCord", out.toByteArray());
-    }
-
-    public void setNodes(Player player, Map<String, Boolean> permissions) {
-        for (String node : permissions.keySet()) {
-            player.addAttachment(this, node, permissions.get(node));
+        out.writeUTF("Set");
+        out.writeInt(perms.size());
+        for (PermissionAttachmentInfo perm : perms) {
+            out.writeUTF(perm.getPermission());
+            out.writeBoolean(perm.getValue());
         }
+
+        player.sendPluginMessage(this, "Permissions", out.toByteArray());
     }
 }
