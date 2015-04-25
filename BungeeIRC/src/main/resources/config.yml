@@ -1,0 +1,8 @@
+server: irc.minecraft.no
+port: 6697
+ssl: true
+
+webirc-password: abc123
+
+channels:
+  global: '#myserver'
