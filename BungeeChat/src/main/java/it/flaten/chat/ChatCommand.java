@@ -30,6 +30,15 @@ public class ChatCommand extends Command {
             return;
         }
 
+        if (args.length == 0) {
+            TextComponent error = new TextComponent("You need to enter a message to send.");
+            error.setColor(ChatColor.RED);
+
+            sender.sendMessage(error);
+
+            return;
+        }
+
         this.chat.commandBroadcast(this.command, (ProxiedPlayer) sender, Joiner.on(" ").join(args));
     }
 }
