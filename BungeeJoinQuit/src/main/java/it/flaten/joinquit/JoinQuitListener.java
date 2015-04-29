@@ -12,6 +12,8 @@ public class JoinQuitListener implements Listener {
         this.joinQuit = joinQuit;
     }
 
+    // Todo: Use ServerConnectedEvent instead of custom tracking.
+
     @EventHandler
     public void onServerSwitch(ServerSwitchEvent event) {
         ProxiedPlayer player = event.getPlayer();
@@ -33,6 +35,14 @@ public class JoinQuitListener implements Listener {
 
     @EventHandler
     public void onPlayerDisconnect(PlayerDisconnectEvent event) {
+        if (event.getPlayer().getServer() == null)
+            return;
+
+        String fromGroup = this.joinQuit.getGroup(event.getPlayer().getServer().getInfo().getName());
+
+        if (fromGroup != null)
+            this.joinQuit.broadcast(fromGroup, this.joinQuit.getMessage("quit", event.getPlayer().getDisplayName()));
+
         this.joinQuit.setLocation(event.getPlayer().getUniqueId(), null);
     }
 }
