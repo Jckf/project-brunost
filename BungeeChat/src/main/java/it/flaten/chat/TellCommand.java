@@ -6,13 +6,12 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Command;
 
-public class TellCommand extends Command {
+public class TellCommand extends NameCompleteCommand {
     private final Chat chat;
 
     public TellCommand(Chat chat) {
-        super("tell", "chat.tell", "msg", "m");
+        super(chat, "tell", "chat.tell", "msg", "m");
 
         this.chat = chat;
     }
