@@ -66,7 +66,7 @@ public class ProtocolMessage {
             String result = "";
 
             for (String arg : this.arguments) {
-                result += (arg.contains(" ") ? ":" : "") + arg + " ";
+                result += (arg.contains(" ") || arg.startsWith(":") ? ":" : "") + arg + " ";
             }
 
             this.argCache = result.substring(0, result.length() > 0 ? result.length() - 1 : 0);

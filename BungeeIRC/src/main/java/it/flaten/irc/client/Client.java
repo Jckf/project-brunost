@@ -78,7 +78,7 @@ public class Client implements Runnable {
     public synchronized void handleInput(ProtocolMessage msg) throws IOException {
         if (msg.getCommand().equals("PING")) {
             ProtocolMessage reply = new ProtocolMessage("PONG");
-            reply.addArgument(msg.getArguments());
+            reply.addArgument(msg.getArguments().startsWith(":") ? msg.getArguments().substring(1) : msg.getArguments());
 
             this.send(reply, true);
             return;

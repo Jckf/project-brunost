@@ -109,7 +109,7 @@ public class Irc extends Plugin {
     }
 
     public boolean isInChannel(ProxiedPlayer player, String channel) {
-        return false;
+        return false; // Todo
     }
 
     public void joinChannel(ProxiedPlayer player, String channel) {
