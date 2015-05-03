@@ -1,9 +1,10 @@
-// Player slots for regular players.
+# Player slots for regular players.
 default: 150
 
+# Kick message sent to players when there are no available slots.
 full-message: "This server is full. Please purchase VIP membership for a reserved slot."
 
-// Extra slots for players with the given permission nodes.
+# Extra slots for players with the given permission nodes.
 extra:
   group.admin: 100
   group.vip: 15
