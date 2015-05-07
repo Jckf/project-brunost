@@ -9,7 +9,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PrefixAdapter extends JavaPlugin {
-    private Chat chat;
+    public Chat chat;
 
     @Override
     public void onEnable() {
