@@ -55,11 +55,11 @@ public class PrefixAdapter extends JavaPlugin {
     }
     
     public Chat getChat() {
-    	return this.chat;
+        return this.chat;
     }
     
     public void setPlayerListName(Player p) {
-    	String prefix = chat.getPlayerPrefix(p);
-    	p.setPlayerListName(prefix + p.getName());
+        String prefix = chat.getPlayerPrefix(p);
+        p.setPlayerListName(prefix + p.getName());
     }
 }
