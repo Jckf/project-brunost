@@ -9,7 +9,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PrefixAdapter extends JavaPlugin {
-    public Chat chat;
+    private Chat chat;
 
     @Override
     public void onEnable() {
@@ -52,5 +52,9 @@ public class PrefixAdapter extends JavaPlugin {
         out.writeUTF(this.chat.getPlayerPrefix(player));
 
         player.sendPluginMessage(this, "BungeeCord", out.toByteArray());
+    }
+    
+    public Chat getChat() {
+    	return this.chat;
     }
 }

@@ -13,7 +13,7 @@ public class PrefixAdapterListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(final PlayerJoinEvent event) {
-    	event.getPlayer().setPlayerListName(prefixAdapter.chat.getPlayerPrefix(event.getPlayer()) + event.getPlayer().getName());
+    	event.getPlayer().setPlayerListName(prefixAdapter.getChat().getPlayerPrefix(event.getPlayer()) + event.getPlayer().getName());
     	
     	// Hack.
         this.prefixAdapter.getServer().getScheduler().scheduleSyncDelayedTask(this.prefixAdapter, new Runnable() {
