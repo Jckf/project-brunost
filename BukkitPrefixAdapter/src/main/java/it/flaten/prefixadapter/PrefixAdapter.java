@@ -53,4 +53,12 @@ public class PrefixAdapter extends JavaPlugin {
 
         player.sendPluginMessage(this, "BungeeCord", out.toByteArray());
     }
+
+    public void setPlayerListName(Player player) {
+        player.setPlayerListName(this.chat.getPlayerPrefix(player) + player.getName());
+    }
+
+    public Chat getChat() {
+        return this.chat;
+    }
 }
