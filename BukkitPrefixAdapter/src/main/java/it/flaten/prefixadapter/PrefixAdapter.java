@@ -3,13 +3,18 @@ package it.flaten.prefixadapter;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import net.milkbowl.vault.chat.Chat;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Team;
+
+import java.util.HashSet;
 
 public class PrefixAdapter extends JavaPlugin {
     private Chat chat;
+    private HashSet<Team> groups = new HashSet<Team>();
 
     @Override
     public void onEnable() {
@@ -32,6 +37,10 @@ public class PrefixAdapter extends JavaPlugin {
         this.getLogger().info("Registering event handlers...");
 
         this.getServer().getPluginManager().registerEvents(new PrefixAdapterListener(this), this);
+
+        for(String s : this.chat.getGroups()){
+            this.getServer().getScoreboardManager().getMainScoreboard().registerNewTeam(s);
+        }
     }
 
     @Override
@@ -56,6 +65,18 @@ public class PrefixAdapter extends JavaPlugin {
 
     public void setPlayerListName(Player player) {
         player.setPlayerListName(this.chat.getPlayerPrefix(player) + player.getName());
+    }
+
+    public void setNameTag(Player player) {
+        for(Team t : groups) {
+            if(t.getName().equalsIgnoreCase(this.chat.getPrimaryGroup(player))) {
+                t.setPrefix(this.chat.getPlayerPrefix(player));
+
+                if(!(t.getPlayers().contains(player))) {
+                    t.addPlayer((OfflinePlayer) player);
+                }
+            }
+        }
     }
 
     public Chat getChat() {
