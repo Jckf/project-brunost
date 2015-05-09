@@ -3,18 +3,15 @@ package it.flaten.prefixadapter;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import net.milkbowl.vault.chat.Chat;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
-
-import java.util.HashSet;
 
 public class PrefixAdapter extends JavaPlugin {
     private Chat chat;
-    private HashSet<Team> groups = new HashSet<Team>();
 
     @Override
     public void onEnable() {
@@ -38,8 +35,10 @@ public class PrefixAdapter extends JavaPlugin {
 
         this.getServer().getPluginManager().registerEvents(new PrefixAdapterListener(this), this);
 
-        for(String s : this.chat.getGroups()){
-            this.getServer().getScoreboardManager().getMainScoreboard().registerNewTeam(s);
+        this.getLogger().info("Resetting main scoreboard...");
+
+        for (Team team : this.getServer().getScoreboardManager().getMainScoreboard().getTeams()) {
+            team.unregister();
         }
     }
 
@@ -68,15 +67,16 @@ public class PrefixAdapter extends JavaPlugin {
     }
 
     public void setNameTag(Player player) {
-        for(Team t : groups) {
-            if(t.getName().equalsIgnoreCase(this.chat.getPrimaryGroup(player))) {
-                t.setPrefix(this.chat.getPlayerPrefix(player));
+        String group = this.chat.getPrimaryGroup(player);
+        Scoreboard scoreboard = this.getServer().getScoreboardManager().getMainScoreboard();
 
-                if(!(t.getPlayers().contains(player))) {
-                    t.addPlayer((OfflinePlayer) player);
-                }
-            }
+        Team team = scoreboard.getTeam(group);
+        if (team == null) {
+            team = scoreboard.registerNewTeam(group);
+            team.setPrefix(this.chat.getGroupPrefix(player.getWorld(), player.getName()));
         }
+
+        team.addPlayer(player);
     }
 
     public Chat getChat() {
