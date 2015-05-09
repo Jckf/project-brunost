@@ -1,0 +1,6 @@
+mysql:
+  hostname: localhost
+  port: 3306
+  schema: bans
+  username: root
+  password: ''
