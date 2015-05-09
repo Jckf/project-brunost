@@ -13,6 +13,7 @@ public class PrefixAdapterListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(final PlayerJoinEvent event) {
+        this.prefixAdapter.setNameTag(event.getPlayer());
         this.prefixAdapter.setPlayerListName(event.getPlayer());
 
     	// Hack.

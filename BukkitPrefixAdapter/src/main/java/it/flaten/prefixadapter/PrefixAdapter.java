@@ -7,6 +7,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 public class PrefixAdapter extends JavaPlugin {
     private Chat chat;
@@ -32,6 +34,12 @@ public class PrefixAdapter extends JavaPlugin {
         this.getLogger().info("Registering event handlers...");
 
         this.getServer().getPluginManager().registerEvents(new PrefixAdapterListener(this), this);
+
+        this.getLogger().info("Resetting main scoreboard...");
+
+        for (Team team : this.getServer().getScoreboardManager().getMainScoreboard().getTeams()) {
+            team.unregister();
+        }
     }
 
     @Override
@@ -56,6 +64,19 @@ public class PrefixAdapter extends JavaPlugin {
 
     public void setPlayerListName(Player player) {
         player.setPlayerListName(this.chat.getPlayerPrefix(player) + player.getName());
+    }
+
+    public void setNameTag(Player player) {
+        String group = this.chat.getPrimaryGroup(player);
+        Scoreboard scoreboard = this.getServer().getScoreboardManager().getMainScoreboard();
+
+        Team team = scoreboard.getTeam(group);
+        if (team == null) {
+            team = scoreboard.registerNewTeam(group);
+            team.setPrefix(this.chat.getGroupPrefix(player.getWorld(), player.getName()));
+        }
+
+        team.addPlayer(player);
     }
 
     public Chat getChat() {
