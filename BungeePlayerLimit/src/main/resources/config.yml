@@ -6,5 +6,7 @@ full-message: "This server is full. Please purchase VIP membership for a reserve
 
 # Extra slots for players with the given permission nodes.
 extra:
-  group.admin: 100
-  group.vip: 15
+  - node: group.admin
+    slots: 100
+  - node: group.vip
+    slots: 15

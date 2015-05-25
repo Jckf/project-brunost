@@ -1,6 +1,5 @@
 package it.flaten.playerlimit;
 
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -12,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.Map;
 
 public class PlayerLimit extends Plugin {
     private File configFile;
@@ -59,9 +59,12 @@ public class PlayerLimit extends Plugin {
 
     public void check(ProxiedPlayer player) {
         String extra = this.getExtra(player);
-        if (extra != null && this.getExtra(extra) < this.config.getInt("extra." + extra)) {
-            this.addExtra(extra);
-            return;
+        if (extra != null) {
+            this.getLogger().info(this.getExtra(extra) + " < " + this.getExtraSlots(extra));
+            if (this.getExtra(extra) < this.getExtraSlots(extra)) {
+                this.addExtra(extra);
+                return;
+            }
         }
 
         int sum = 0;
@@ -81,12 +84,24 @@ public class PlayerLimit extends Plugin {
     }
 
     public String getExtra(ProxiedPlayer player) {
-        for (String extra : this.config.getSection("extra").getKeys()) {
-            if (player.hasPermission(extra) && this.getExtra(extra) < this.config.getInt("extra." + extra))
-                return extra;
+        for (Object object : this.config.getList("extra")) {
+            HashMap<String, Object> section = (HashMap<String, Object>) object;
+
+            if (player.hasPermission((String) section.get("node")))
+                return (String) section.get("node");
         }
 
         return null;
+    }
+
+    public int getExtraSlots(String node) {
+        for (Object object : this.config.getList("extra")) {
+            HashMap<String, Object> section = (HashMap<String, Object>) object;
+            if (node.equals((String) section.get("node")))
+                return (int) section.get("slots");
+        }
+
+        return 0;
     }
 
     public int getExtra(String node) {
