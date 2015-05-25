@@ -61,6 +61,7 @@ public class ChatListener implements Listener {
         // Thug life.
         ProxiedPlayer player = (ProxiedPlayer) event.getReceiver();
 
-        player.setDisplayName(in.readUTF() + player.getName());
+        String name = in.readUTF() + player.getName();
+        player.setDisplayName(name.length() > 16 ? name.substring(0, 16) : name);
     }
 }
