@@ -8,6 +8,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class BanCommand extends Command {
     private final Bans bans;
@@ -29,11 +30,18 @@ public class BanCommand extends Command {
 
         ProxiedPlayer player = this.bans.getProxy().getPlayer(args[0]);
 
+        UUID uuid;
         if (player == null) {
-            TextComponent error = new TextComponent("Could not find player.");
-            error.setColor(ChatColor.RED);
-            sender.sendMessage(error);
-            return;
+            uuid = this.bans.getUuid(args[0]);
+
+            if (uuid == null) {
+                TextComponent error = new TextComponent("Could not find player.");
+                error.setColor(ChatColor.RED);
+                sender.sendMessage(error);
+                return;
+            }
+        } else {
+            uuid = player.getUniqueId();
         }
 
         String reason = null;
@@ -44,8 +52,11 @@ public class BanCommand extends Command {
         }
 
         try {
-            this.bans.ban(player, (sender instanceof ProxiedPlayer ? (ProxiedPlayer) sender : null), reason);
-            this.bans.kick(player, "You were banned" + (reason != null && reason.length() > 0 ? ": " + reason : "."));
+            this.bans.ban(uuid, (sender instanceof ProxiedPlayer ? ((ProxiedPlayer) sender).getUniqueId() : null), reason);
+
+            if (player != null) {
+                this.bans.kick(player, "You were banned" + (reason != null && reason.length() > 0 ? ": " + reason : "."));
+            }
         } catch (IllegalArgumentException exception) {
             TextComponent error = new TextComponent(exception.getMessage());
             error.setColor(ChatColor.RED);
@@ -60,7 +71,7 @@ public class BanCommand extends Command {
             return;
         }
 
-        TextComponent done = new TextComponent("You banned \"" + player.getName() + "\"" + (reason != null && reason.length() > 0 ? ": " + reason : "."));
+        TextComponent done = new TextComponent("You banned \"" + args[0] + "\"" + (reason != null && reason.length() > 0 ? ": " + reason : "."));
         done.setColor(ChatColor.GREEN);
         sender.sendMessage(done);
     }
