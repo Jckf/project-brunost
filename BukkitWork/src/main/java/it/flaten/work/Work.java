@@ -53,7 +53,7 @@ public class Work extends JavaPlugin {
 
         int i = 0;
         for (ItemStack stack : inventory) {
-            config.set("template." + i++, stack.serialize());
+            config.set("template." + i++, stack);
         }
 
         this.saveConfig();
@@ -93,7 +93,7 @@ public class Work extends JavaPlugin {
 
         int i = 0;
         for (ItemStack stack : inventory) {
-            file.set("inventory." + i++, stack.serialize());
+            file.set("inventory." + i++, stack);
         }
 
         file.save(inventoryFile);
@@ -104,6 +104,8 @@ public class Work extends JavaPlugin {
         for (String key : config.getConfigurationSection("template").getKeys(false)) {
             inventory.setItem(Integer.parseInt(key), config.getItemStack("template." + key));
         }
+
+        this.getServer().getPluginManager().callEvent(new WorkEvent(player, true));
     }
 
     private void disableWork(Player player) throws IOException {
@@ -123,5 +125,7 @@ public class Work extends JavaPlugin {
 
             throw new IOException("Failed to delete inventory file: " + inventoryFile);
         }
+
+        this.getServer().getPluginManager().callEvent(new WorkEvent(player, false));
     }
 }

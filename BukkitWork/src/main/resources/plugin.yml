@@ -16,4 +16,4 @@ permissions:
     default: op
   work.work:
     description: Gives access to the work command.
-    default: false
+    default: op
