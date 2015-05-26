@@ -1,6 +1,8 @@
 package it.flaten.irc;
 
 import it.flaten.chat.ChatBroadcastEvent;
+import it.flaten.chat.ChatCommandEvent;
+import it.flaten.chat.ChatPrivateEvent;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
@@ -34,6 +36,22 @@ public class IrcListener implements Listener {
         for (String channel : this.irc.getMcChannels(event.getPlayer().getServer().getInfo().getName())) {
             this.irc.sendMessage(event.getPlayer(), this.irc.channelMcToIrc(channel), event.getMessage());
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onChatCommand(ChatCommandEvent event) {
+        if (!this.irc.isInChannel(event.getSender(), this.irc.channelCommandToIrc(event.getCommand())))
+            this.irc.joinChannel(event.getSender(), this.irc.channelCommandToIrc(event.getCommand()));
+
+        this.irc.sendMessage(event.getSender(), this.irc.channelCommandToIrc(event.getCommand()), event.getMessage());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onChatPrivate(ChatPrivateEvent event) {
+        if (!this.irc.isInChannel(event.getSender(), this.irc.getTellChannel()))
+            this.irc.joinChannel(event.getSender(), this.irc.getTellChannel());
+
+        this.irc.sendMessage(event.getSender(), this.irc.getTellChannel(), " -> " + event.getReceiver().getName() + ": " + event.getMessage());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

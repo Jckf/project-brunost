@@ -6,3 +6,9 @@ webirc-password: abc123
 
 channels:
   global: '#myserver'
+
+tell-channel: '#myserver.pm'
+
+commands:
+  t: '#myserver.trade'
+  s: '#myserver.staff'

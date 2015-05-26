@@ -132,7 +132,8 @@ public class Irc extends Plugin {
 
     public void sendMessage(ProxiedPlayer player, String channel, String message) {
         try {
-            ProtocolMessage msg = new ProtocolMessage("PRIVMSG #alacho");
+            ProtocolMessage msg = new ProtocolMessage("PRIVMSG");
+            msg.addArgument(channel);
             msg.addArgument(message);
             this.clients.get(player.getUniqueId()).send(msg);
         } catch (IOException exception) {
@@ -171,4 +172,14 @@ public class Irc extends Plugin {
 
         return result;
     }
+
+    public String getTellChannel() {
+        return this.config.getString("tell-channel");
+    }
+
+    public String channelCommandToIrc(String command) {
+        return this.config.getString("commands." + command);
+    }
+
+    // Todo: Reverse of the above method.
 }
