@@ -4,8 +4,8 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PermissionCheckEvent;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
-import net.md_5.bungee.api.event.ServerDisconnectEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
@@ -18,8 +18,6 @@ public class PermissionsListener implements Listener {
 
     @EventHandler
     public void onPluginMessage(PluginMessageEvent event) {
-        this.permissions.getLogger().info("PM on " + event.getTag());
-
         if (!event.getTag().equals("Permissions"))
             return;
 
@@ -52,7 +50,7 @@ public class PermissionsListener implements Listener {
     }
 
     @EventHandler
-    public void onServerDisconnect(ServerDisconnectEvent event) {
+    public void onPlayerDisconnect(PlayerDisconnectEvent event) {
         this.permissions.clearNodes(event.getPlayer());
     }
 }
