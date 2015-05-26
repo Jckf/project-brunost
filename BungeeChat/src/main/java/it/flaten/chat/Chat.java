@@ -1,5 +1,6 @@
 package it.flaten.chat;
 
+import com.google.common.base.Joiner;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -263,11 +264,22 @@ public class Chat extends Plugin {
      * @param message The message itself.
      */
     public void commandBroadcast(String command, ProxiedPlayer player, String message) {
+        this.getProxy().getPluginManager().callEvent(new ChatCommandEvent(player, command, message));
+
         for (ProxiedPlayer target : this.getProxy().getPlayers()) {
             if (!target.hasPermission("chat.command." + command))
                 continue;
 
             target.sendMessage(this.formatMessage(player, command, message));
         }
+    }
+
+    public void sendPrivateMessage(ProxiedPlayer player, ProxiedPlayer target, String text) {
+        this.getProxy().getPluginManager().callEvent(new ChatPrivateEvent(player, target, text));
+
+        BaseComponent message = this.formatMessage(player, target, text);
+
+        player.sendMessage(message);
+        target.sendMessage(message);
     }
 }

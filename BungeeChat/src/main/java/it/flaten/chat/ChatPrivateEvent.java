@@ -3,14 +3,14 @@ package it.flaten.chat;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Event;
 
-public class ChatCommandEvent extends Event {
+public class ChatPrivateEvent extends Event {
     private final ProxiedPlayer sender;
-    private final String command;
+    private final ProxiedPlayer receiver;
     private final String message;
 
-    public ChatCommandEvent(ProxiedPlayer sender, String command, String message) {
+    public ChatPrivateEvent(ProxiedPlayer sender, ProxiedPlayer receiver, String message) {
         this.sender = sender;
-        this.command = command;
+        this.receiver = receiver;
         this.message = message;
     }
 
@@ -18,8 +18,8 @@ public class ChatCommandEvent extends Event {
         return this.sender;
     }
 
-    public String getCommand() {
-        return this.command;
+    public ProxiedPlayer getReceiver() {
+        return this.receiver;
     }
 
     public String getMessage() {

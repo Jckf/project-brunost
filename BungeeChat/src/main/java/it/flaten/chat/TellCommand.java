@@ -55,9 +55,6 @@ public class TellCommand extends NameCompleteCommand {
         System.arraycopy(args, 1, args, 0, args.length - 1);
         args[args.length - 1] = null;
 
-        BaseComponent message = this.chat.formatMessage(player, target, Joiner.on(" ").skipNulls().join(args));
-
-        sender.sendMessage(message);
-        target.sendMessage(message);
+        this.chat.sendPrivateMessage(player, target, Joiner.on(" ").skipNulls().join(args));
     }
 }
