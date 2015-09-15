@@ -114,7 +114,9 @@ public class Irc extends Plugin {
 
     public void joinChannel(ProxiedPlayer player, String channel) {
         try {
-            this.clients.get(player).send(new ProtocolMessage("JOIN #alacho"));
+            ProtocolMessage msg = new ProtocolMessage("JOIN");
+            msg.addArgument(channel);
+            this.clients.get(player).send(msg);
         } catch (IOException exception) {
             this.getLogger().info("Failed to join channel!");
             exception.printStackTrace();
@@ -123,7 +125,9 @@ public class Irc extends Plugin {
 
     public void partChannel(ProxiedPlayer player, String channel) {
         try {
-            this.clients.get(player).send(new ProtocolMessage("PART #alacho"));
+            ProtocolMessage msg = new ProtocolMessage("PART");
+            msg.addArgument(channel);
+            this.clients.get(player).send(msg);
         } catch (IOException exception) {
             this.getLogger().info("Failed to part channel!");
             exception.printStackTrace();
