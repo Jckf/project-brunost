@@ -22,7 +22,7 @@ public class Irc extends Plugin {
     private Configuration config;
 
     private Chat chat;
-    private final HashMap<UUID, Client> clients = new HashMap<>();
+    private final HashMap<ProxiedPlayer, Client> clients = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -101,11 +101,11 @@ public class Irc extends Plugin {
             return;
         }
 
-        this.clients.put(player.getUniqueId(), client);
+        this.clients.put(player, client);
     }
 
     public boolean clientExists(ProxiedPlayer player) {
-        return this.clients.containsKey(player.getUniqueId());
+        return this.clients.containsKey(player);
     }
 
     public boolean isInChannel(ProxiedPlayer player, String channel) {
@@ -114,7 +114,7 @@ public class Irc extends Plugin {
 
     public void joinChannel(ProxiedPlayer player, String channel) {
         try {
-            this.clients.get(player.getUniqueId()).send(new ProtocolMessage("JOIN #alacho"));
+            this.clients.get(player).send(new ProtocolMessage("JOIN #alacho"));
         } catch (IOException exception) {
             this.getLogger().info("Failed to join channel!");
             exception.printStackTrace();
@@ -123,7 +123,7 @@ public class Irc extends Plugin {
 
     public void partChannel(ProxiedPlayer player, String channel) {
         try {
-            this.clients.get(player.getUniqueId()).send(new ProtocolMessage("PART #alacho"));
+            this.clients.get(player).send(new ProtocolMessage("PART #alacho"));
         } catch (IOException exception) {
             this.getLogger().info("Failed to part channel!");
             exception.printStackTrace();
@@ -135,7 +135,7 @@ public class Irc extends Plugin {
             ProtocolMessage msg = new ProtocolMessage("PRIVMSG");
             msg.addArgument(channel);
             msg.addArgument(message);
-            this.clients.get(player.getUniqueId()).send(msg);
+            this.clients.get(player).send(msg);
         } catch (IOException exception) {
             this.getLogger().info("Failed to send PRIVMSG!");
             exception.printStackTrace();
@@ -144,13 +144,13 @@ public class Irc extends Plugin {
 
     public void removeClient(ProxiedPlayer player) {
         try {
-            this.clients.get(player.getUniqueId()).send(new ProtocolMessage("QUIT"));
+            this.clients.get(player).send(new ProtocolMessage("QUIT"));
         } catch (IOException exception) {
             this.getLogger().info("Failed to send quit!");
             exception.printStackTrace();
         }
 
-        this.clients.remove(player.getUniqueId());
+        this.clients.remove(player);
     }
 
     public List<String> getMcChannels(String server) {
