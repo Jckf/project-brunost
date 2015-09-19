@@ -1,0 +1,22 @@
+# MySQL connection details.
+mysql:
+  hostname: localhost
+  port: 3306
+  schema: bank
+  username: root
+  password: abc123
+
+# What to sync.
+sync:
+  inventory: false
+  armor: false
+  health: false
+  exp: false
+  hunger: false
+  effects: false
+
+# Delay in ticks before loading data on connect to give the previous server some time to properly save.
+load_delay: 20
+
+# If no data is stored, should the data from this server be used as a source for all the other servers?
+source: false
