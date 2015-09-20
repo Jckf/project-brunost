@@ -6,25 +6,61 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.config.Configuration;
+import net.md_5.bungee.config.ConfigurationProvider;
+import net.md_5.bungee.config.YamlConfiguration;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class Announce extends Plugin {
     private File configFile;
     private Configuration config;
-    private Map<Integer, ScheduledTask> tasks;
+    private Map<Integer, ScheduledTask> tasks = new HashMap<>();
 
     @Override
     public void onEnable() {
-        this.tasks = new HashMap<>();
+        this.getLogger().info("Loading configuration...");
 
-        // Todo: Load saved announcements.
+        this.configFile = new File(this.getDataFolder(), "config.yml");
+
+        if (!this.configFile.exists()) {
+            this.getDataFolder().mkdir();
+
+            try {
+                Files.copy(this.getResourceAsStream("config.yml"), this.configFile.toPath());
+            } catch (IOException exception) {
+                this.getLogger().severe("Failed to copy default configuration.");
+                exception.printStackTrace();
+            }
+        }
+
+        try {
+            this.config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(this.configFile);
+        } catch (IOException exception) {
+            this.getLogger().severe("Failed to load config.yml. This plugin will not do anything.");
+            return;
+        }
+
+        try {
+            for (Object object : this.config.getList("announcements")) {
+                HashMap<String, Object> ann = (HashMap<String, Object>) object;
+                this.scheduleAnnouncement(
+                    this.parseMessage((String) ann.get("message")),
+                    (int) ann.get("initial-delay"),
+                    (int) ann.get("interval")
+                );
+            }
+        } catch (Exception exception) {
+            this.getLogger().warning("Exception while loading announcements! Probably melformed configuration.");
+            exception.printStackTrace();
+        }
 
         this.getLogger().info("Registering commands...");
-
         this.getProxy().getPluginManager().registerCommand(this, new AnnounceCommand(this));
     }
 

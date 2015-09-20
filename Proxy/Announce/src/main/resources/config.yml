@@ -1,0 +1,7 @@
+announcements:
+- message: '&cYou have not configured your announcements!'
+  initial-delay: 0
+  interval: 60
+- message: '&cEdit plugins/Announce/config.yml!'
+  initial-delay: 5
+  interval: 60
