@@ -9,14 +9,14 @@
 	<packaging>pom</packaging>
  
 	<modules>
-		<module>Announce</module>
-		<module>AntiSpam</module>
-		<module>Bans</module>
-		<module>Chat</module>
-		<module>IRC</module>
-		<module>JoinQuit</module>
-		<module>Permissions</module>
-		<module>PlayerLimit</module>
-		<module>Welcome</module>
+		<module>announce</module>
+		<module>antispam</module>
+		<module>bans</module>
+		<module>chat</module>
+		<module>irc</module>
+		<module>joinquit</module>
+		<module>permissions</module>
+		<module>playerlimit</module>
+		<module>welcome</module>
 	</modules>
 </project>

@@ -9,7 +9,7 @@
 	<packaging>pom</packaging>
  
 	<modules>
-		<module>Proxy</module>
-		<module>Server</module>
+		<module>proxy</module>
+		<module>server</module>
 	</modules>
 </project>
