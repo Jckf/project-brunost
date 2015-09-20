@@ -9,15 +9,15 @@
 	<packaging>pom</packaging>
  
 	<modules>
-		<module>Bank</module>
-		<module>BlockProtection</module>
-		<module>JoinQuit</module>
-		<module>Mount</module>
-		<module>Permissions</module>
-		<module>PlayerSync</module>
-		<module>PowerTools</module>
-		<module>PrefixAdapter</module>
-		<module>TimeSync</module>
-		<module>Work</module>
+		<module>bank</module>
+		<module>blockprotection</module>
+		<module>joinquit</module>
+		<module>mount</module>
+		<module>permissions</module>
+		<module>playersync</module>
+		<module>powertools</module>
+		<module>prefixadapter</module>
+		<module>timesync</module>
+		<module>work</module>
 	</modules>
 </project>
