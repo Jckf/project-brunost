@@ -29,6 +29,10 @@
             <id>bungeecord-repo</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
+        <repository>
+            <id>flaten-repo</id>
+            <url>http://ci.flaten.it/plugin/repository/everything</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -39,11 +43,9 @@
         </dependency>
 
         <dependency>
-            <groupId>it.flaten</groupId>
+            <groupId>it.flaten.minecraft.proxy</groupId>
             <artifactId>chat</artifactId>
             <version>0.1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/Chat.jar</systemPath>
         </dependency>
     </dependencies>
 
