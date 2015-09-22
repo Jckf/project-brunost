@@ -309,6 +309,9 @@ public class Bank extends JavaPlugin {
         if (amount <= 0)
             throw new IllegalArgumentException("Amount must be greater than zero!");
 
+        if (source.equals(target))
+            throw new IllegalArgumentException("Target account must differ from source account!");
+
         // How much gold is in the account?
         // Is it enough?
         if (this.getBalance(source) < amount)
