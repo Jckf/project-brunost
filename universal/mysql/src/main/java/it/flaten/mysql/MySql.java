@@ -14,7 +14,7 @@ public class MySql {
 
         MySqlPool pool = new MySqlPool(name + id);
 
-        this.pools.get(name).set(id, pool);
+        this.pools.get(name).add(id, pool);
 
         return pool;
     }
