@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Bank extends JavaPlugin {
-    private static final String INSERT_TRANSACTION = "INSERT INTO transactions (source, target, amount) VALUES (?, ?, ?)";
+    private static final String INSERT_TRANSACTION = "INSERT INTO transactions (source, target, amount, timestamp) VALUES (?, ?, ?, ?)";
     private static final String SELECT_BALANCE = "SELECT amount FROM accounts WHERE player=?";
     private static final String INSERT_BALANCE = "INSERT INTO accounts (player, amount) VALUES (?, ?)";
     private static final String UPDATE_BALANCE = "UPDATE accounts SET amount=? WHERE player=?";
@@ -92,6 +92,7 @@ public class Bank extends JavaPlugin {
             insertTransaction.setString(1, source.toString());
             insertTransaction.setString(2, target.toString());
             insertTransaction.setInt(3, amount);
+            insertTransaction.setInt(4, (int) (System.currentTimeMillis() / 1000));
 
             if (insertTransaction.executeUpdate() != 1)
                 throw new SQLException("Unexpected number of affected rows!");
