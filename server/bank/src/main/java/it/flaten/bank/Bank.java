@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.beans.PropertyVetoException;
 import java.sql.*;
 import java.util.Map;
 import java.util.UUID;
@@ -41,9 +42,13 @@ public class Bank extends JavaPlugin {
         this.mySqlPool = this.mySql.getPool(this);
 
         try {
+            this.mySqlPool.setUrl(this.getConfig().getString("mysql.url", "jdbc:mysql://localhost:3306/bank"));
+            this.mySqlPool.setUser(this.getConfig().getString("mysql.username", "root"));
+            this.mySqlPool.setPassword(this.getConfig().getString("mysql.password", ""));
+
             if (this.mySqlPool.getConnection() == null)
                 throw new SQLException("Unable to get server connection from pool!");
-        } catch (SQLException exception) {
+        } catch (PropertyVetoException | SQLException exception) {
             exception.printStackTrace();
 
             this.getLogger().warning("Database connection test failed! Disabling plugin...");

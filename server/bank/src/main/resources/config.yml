@@ -1,7 +1,5 @@
 mysql:
-  hostname: localhost
-  port: 3306
-  schema: bank
+  url: jdbc:mysql://localhost:3306/bank
   username: root
   password: abc123
 
