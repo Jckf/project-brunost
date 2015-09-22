@@ -2,6 +2,8 @@ name: ${project.name}
 version: ${project.version}
 main: ${main.class}
 
+depends: [mysql]
+
 commands:
   bank:
     usage: /<command> [balance/deposit/withdraw/transfer] [amount] [player]

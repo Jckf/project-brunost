@@ -1,5 +1,7 @@
 package it.flaten.bank;
 
+import it.flaten.mysql.BukkitMySql;
+import it.flaten.mysql.MySqlPool;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -10,14 +12,13 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Bank extends JavaPlugin {
-    private Connection db;
+    private static final String INSERT_TRANSACTION = "INSERT INTO transactions (source, target, amount) VALUES (?, ?, ?)";
+    private static final String SELECT_BALANCE = "SELECT amount FROM accounts WHERE player=?";
+    private static final String INSERT_BALANCE = "INSERT INTO accounts (player, amount) VALUES (?, ?)";
+    private static final String UPDATE_BALANCE = "UPDATE accounts SET amount=? WHERE player=?";
 
-    private PreparedStatement insertTransaction;
-
-    private PreparedStatement testSelect;
-    private PreparedStatement selectBalance;
-    private PreparedStatement insertBalance;
-    private PreparedStatement updateBalance;
+    private BukkitMySql mySql;
+    private MySqlPool mySqlPool;
 
     private Material currency;
 
@@ -36,8 +37,16 @@ public class Bank extends JavaPlugin {
 
         this.getLogger().info("Testing database connection...");
 
-        if (this.getDb() == null) {
-            this.getLogger().warning("Database connection failed! Disabling plugin...");
+        this.mySql = (BukkitMySql) this.getServer().getPluginManager().getPlugin("mysql");
+        this.mySqlPool = this.mySql.getPool(this);
+
+        try {
+            if (this.mySqlPool.getConnection() == null)
+                throw new SQLException("Unable to get server connection from pool!");
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+
+            this.getLogger().warning("Database connection test failed! Disabling plugin...");
             this.getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -55,80 +64,7 @@ public class Bank extends JavaPlugin {
 
         this.getLogger().info("Cleaning up database connection...");
 
-        try {
-            if (this.updateBalance != null)
-                this.updateBalance.close();
-        } catch (SQLException ignored) { }
-
-        try {
-            if (this.insertBalance != null)
-                this.insertBalance.close();
-        } catch (SQLException ignored) { }
-
-        try {
-            if (this.selectBalance != null)
-                this.selectBalance.close();
-        } catch (SQLException ignored) { }
-
-        try {
-            if (this.insertTransaction != null)
-                this.insertTransaction.close();
-        } catch (SQLException ignored) { }
-
-        try {
-            if (this.db != null)
-                this.db.close();
-        } catch (SQLException ignored) { }
-    }
-
-    /**
-     * Initiate a database connection.
-     *
-     * An existing connection will be returned if available.
-     *
-     * @return A valid database connection, or null if the database is unavailable.
-     */
-    private Connection getDb() {
-        if (this.db != null) {
-            try {
-                if (this.db.isClosed())
-                    throw new SQLException("An existing connection was closed.");
-
-                ResultSet result = this.testSelect.executeQuery();
-                if (result.next())
-                    return this.db;
-            } catch (SQLException ignored) { }
-
-            // It wasn't null, but we couldn't use it. Be gone, evildoer!
-            this.db = null;
-        }
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            this.db = DriverManager.getConnection(
-                "jdbc:mysql://" + this.getConfig().getString("mysql.hostname", "localhost") + ":" + this.getConfig().getInt("mysql.port", 3306) + "/" + this.getConfig().getString("mysql.schema", "bank"),
-                this.getConfig().getString("mysql.username", "root"),
-                this.getConfig().getString("mysql.password", "")
-            );
-
-            // New connection means new statements.
-            this.testSelect = this.db.prepareStatement("SELECT 1");
-            this.insertTransaction = this.db.prepareStatement("INSERT INTO transactions (source, target, amount) VALUES (?, ?, ?)");
-            this.selectBalance = this.db.prepareStatement("SELECT amount FROM accounts WHERE player=?");
-            this.insertBalance = this.db.prepareStatement("INSERT INTO accounts (player, amount) VALUES (?, ?)");
-            this.updateBalance = this.db.prepareStatement("UPDATE accounts SET amount=? WHERE player=?");
-
-            // Todo: Verify table existence, and create if needed.
-        } catch (ClassNotFoundException exception) {
-            this.db = null;
-            this.getLogger().warning("ClassNotFoundException while connecting to database!");
-        } catch (SQLException exception) {
-            this.db = null;
-            this.getLogger().warning("SQLException while connecting to database!");
-            exception.printStackTrace();
-        }
-
-        return this.db;
+        this.mySqlPool.close();
     }
 
     /**
@@ -144,16 +80,17 @@ public class Bank extends JavaPlugin {
      * @throws SQLException if the database backend throws one, or if the database has inconsistencies.
      */
     private void logTransaction(UUID source, UUID target, int amount) throws SQLException {
-        this.getDb();
+        try (
+            Connection connection = this.mySqlPool.getConnection();
+            PreparedStatement insertTransaction = connection.prepareStatement(INSERT_TRANSACTION)
+        ) {
+            insertTransaction.setString(1, source.toString());
+            insertTransaction.setString(2, target.toString());
+            insertTransaction.setInt(3, amount);
 
-        this.insertTransaction.setString(1, source.toString());
-        this.insertTransaction.setString(2, target.toString());
-        this.insertTransaction.setInt(3, amount);
-
-        if (this.insertTransaction.executeUpdate() != 1)
-            throw new SQLException("Unexpected number of affected rows!");
-
-        this.insertTransaction.clearParameters();
+            if (insertTransaction.executeUpdate() != 1)
+                throw new SQLException("Unexpected number of affected rows!");
+        }
     }
 
     /**
@@ -166,18 +103,19 @@ public class Bank extends JavaPlugin {
      * @throws SQLException if the database backend throws one.
      */
     public int getBalance(UUID player) throws SQLException {
-        this.getDb();
+        try (
+            Connection connection = this.mySqlPool.getConnection();
+            PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE)
+        ) {
+            selectBalance.setString(1, player.toString());
 
-        this.selectBalance.setString(1, player.toString());
+            try (ResultSet result = selectBalance.executeQuery()) {
+                if (!result.next())
+                    return 0;
 
-        ResultSet result = this.selectBalance.executeQuery();
-
-        this.selectBalance.clearParameters();
-
-        if (!result.next())
-            return 0;
-
-        return result.getInt(1);
+                return result.getInt(1);
+            }
+        }
     }
 
     /**
@@ -206,75 +144,69 @@ public class Bank extends JavaPlugin {
         if (has < amount)
             throw new InsufficientFundsException();
 
-        if (this.getDb() == null)
-            throw new SQLException("Database object is null!");
-
         boolean success = false;
 
-        try {
-            // Start transaction.
-            this.db.setAutoCommit(false);
+        try (Connection connection = this.mySqlPool.getConnection()) {
+            try (
+                PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);
+                PreparedStatement insertBalance = connection.prepareStatement(INSERT_BALANCE);
+                PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE)
+            ) {
+                // Start transaction.
+                connection.setAutoCommit(false);
 
-            // Log it.
-            this.logTransaction(player, player, amount);
+                // Log it.
+                this.logTransaction(player, player, amount);
 
-            // Remove from inventory.
-            Map<Integer, ItemStack> failed = inventory.removeItem(new ItemStack(this.currency, amount));
-            if (!failed.isEmpty()) {
-                // Todo: This should never happen, but if it does the log will be incorrect. Figure it out...
+                // Remove from inventory.
+                Map<Integer, ItemStack> failed = inventory.removeItem(new ItemStack(this.currency, amount));
+                if (!failed.isEmpty()) {
+                    // Todo: This should never happen, but if it does the log will be incorrect. Figure it out...
 
-                this.getLogger().warning("Failed to remove all items from inventory during deposit! Decreasing amount...");
+                    this.getLogger().warning("Failed to remove all items from inventory during deposit! Decreasing amount...");
 
-                for (ItemStack stack : failed.values()) {
-                    amount -= stack.getAmount();
+                    for (ItemStack stack : failed.values()) {
+                        amount -= stack.getAmount();
+                    }
                 }
+
+                // Add to account.
+                selectBalance.setString(1, player.toString());
+
+                try (ResultSet result = selectBalance.executeQuery()) {
+                    if (result.next()) {
+                        updateBalance.setInt(1, this.getBalance(player) + amount);
+                        updateBalance.setString(2, player.toString());
+
+                        if (updateBalance.executeUpdate() != 1)
+                            throw new SQLException("Unexpected number of affected rows!");
+                    } else {
+                        insertBalance.setString(1, player.toString());
+                        insertBalance.setInt(2, amount);
+
+                        if (insertBalance.executeUpdate() != 1)
+                            throw new SQLException("Unexpected number of affected rows!");
+                    }
+
+                    // If we've gotten this far, commit the changes.
+                    connection.commit();
+
+                    // Mark as success.
+                    success = true;
+                }
+            } catch (SQLException exception) {
+                this.getLogger().warning("SQLException while depositing currency!");
+                exception.printStackTrace();
+
+                try {
+                    connection.rollback();
+                } catch (SQLException exception2) {
+                    this.getLogger().warning("SQLException while rolling back transaction!");
+                    exception2.printStackTrace();
+                }
+            } finally {
+                connection.setAutoCommit(true);
             }
-
-            // Add to account.
-            this.selectBalance.setString(1, player.toString());
-
-            ResultSet result = this.selectBalance.executeQuery();
-
-            this.selectBalance.clearParameters();
-
-            if (result.next()) {
-                this.updateBalance.setInt(1, this.getBalance(player) + amount);
-                this.updateBalance.setString(2, player.toString());
-
-                if (this.updateBalance.executeUpdate() != 1)
-                    throw new SQLException("Unexpected number of affected rows!");
-
-                this.updateBalance.clearParameters();
-            } else {
-                this.insertBalance.setString(1, player.toString());
-                this.insertBalance.setInt(2, amount);
-
-                if (this.insertBalance.executeUpdate() != 1)
-                    throw new SQLException("Unexpected number of affected rows!");
-
-                this.insertBalance.clearParameters();
-            }
-
-            result.close();
-
-            // If we've gotten this far, commit the changes.
-            this.db.commit();
-
-            // Mark as success.
-            success = true;
-        } catch (SQLException exception) {
-            this.getLogger().warning("SQLException while depositing currency!");
-            exception.printStackTrace();
-
-            try {
-                if (this.db != null)
-                    this.db.rollback();
-            } catch (SQLException exception2) {
-                this.getLogger().warning("SQLException while rolling back transaction!");
-                exception2.printStackTrace();
-            }
-        } finally {
-            this.db.setAutoCommit(true);
         }
 
         if (!success)
@@ -318,43 +250,39 @@ public class Bank extends JavaPlugin {
 
         boolean success = false;
 
-        if (this.getDb() == null)
-            throw new SQLException("Database object is null!");
+        try (Connection connection = this.mySqlPool.getConnection()) {
+            try (PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE)) {
+                connection.setAutoCommit(false);
 
-        try {
-            this.db.setAutoCommit(false);
+                this.logTransaction(player, player, -amount);
 
-            this.logTransaction(player, player, - amount);
+                updateBalance.setInt(1, this.getBalance(player) - amount);
+                updateBalance.setString(2, player.toString());
 
-            this.updateBalance.setInt(1, this.getBalance(player) - amount);
-            this.updateBalance.setString(2, player.toString());
+                if (updateBalance.executeUpdate() != 1)
+                    throw new SQLException("Unexpected number of affected rows!");
 
-            if (this.updateBalance.executeUpdate() != 1)
-                throw new SQLException("Unexpected number of affected rows!");
+                // Add to inventory.
+                inventory.addItem(new ItemStack(this.currency, amount));
 
-            this.updateBalance.clearParameters();
+                // Looks good. Let's commit!
+                connection.commit();
 
-            // Add to inventory.
-            inventory.addItem(new ItemStack(this.currency, amount));
+                // Mark as success.
+                success = true;
+            } catch (SQLException exception) {
+                this.getLogger().warning("SQLException while withdrawing currency!");
+                exception.printStackTrace();
 
-            // Looks good. Let's commit!
-            this.db.commit();
-
-            // Mark as success.
-            success = true;
-        } catch (SQLException exception) {
-            this.getLogger().warning("SQLException while withdrawing currency!");
-            exception.printStackTrace();
-
-            try {
-                if (this.db != null)
-                    this.db.rollback();
-            } catch (SQLException exception2) {
-                this.getLogger().warning("SQLException while rolling back transaction!");
-                exception2.printStackTrace();
+                try {
+                    connection.rollback();
+                } catch (SQLException exception2) {
+                    this.getLogger().warning("SQLException while rolling back transaction!");
+                    exception2.printStackTrace();
+                }
+            } finally {
+                connection.setAutoCommit(true);
             }
-        } finally {
-            this.db.setAutoCommit(true);
         }
 
         if (!success)
@@ -381,62 +309,60 @@ public class Bank extends JavaPlugin {
         if (this.getBalance(source) < amount)
             throw new InsufficientFundsException();
 
-        if (this.getDb() == null)
-            throw new SQLException("Database object is null!");
-
         boolean success = false;
 
-        try {
-            this.db.setAutoCommit(false);
+        try (Connection connection = this.mySqlPool.getConnection()) {
+            try (
+                PreparedStatement selectBalance = connection.prepareStatement(SELECT_BALANCE);
+                PreparedStatement insertBalance = connection.prepareStatement(INSERT_BALANCE);
+                PreparedStatement updateBalance = connection.prepareStatement(UPDATE_BALANCE)
+            ) {
+                connection.setAutoCommit(false);
 
-            this.logTransaction(source, target, amount);
+                this.logTransaction(source, target, amount);
 
-            this.updateBalance.setInt(1, this.getBalance(source) - amount);
-            this.updateBalance.setString(2, source.toString());
+                updateBalance.setInt(1, this.getBalance(source) - amount);
+                updateBalance.setString(2, source.toString());
 
-            if (this.updateBalance.executeUpdate() != 1)
-                throw new SQLException("Unexpected number of affected rows!");
-
-            this.updateBalance.clearParameters();
-
-            this.selectBalance.setString(1, target.toString());
-
-            ResultSet result = this.selectBalance.executeQuery();
-
-            if (result.next()) {
-                this.updateBalance.setInt(1, this.getBalance(target) + amount);
-                this.updateBalance.setString(2, target.toString());
-
-                if (this.updateBalance.executeUpdate() != 1)
+                if (updateBalance.executeUpdate() != 1)
                     throw new SQLException("Unexpected number of affected rows!");
 
-                this.updateBalance.clearParameters();
-            } else {
-                this.insertBalance.setString(1, target.toString());
-                this.insertBalance.setInt(2, amount);
+                updateBalance.clearParameters();
 
-                if (this.insertBalance.executeUpdate() != 1)
-                    throw new SQLException("Unexpected number of affected rows!");
+                selectBalance.setString(1, target.toString());
 
-                this.insertBalance.clearParameters();
+                try (ResultSet result = selectBalance.executeQuery()) {
+                    if (result.next()) {
+                        updateBalance.setInt(1, this.getBalance(target) + amount);
+                        updateBalance.setString(2, target.toString());
+
+                        if (updateBalance.executeUpdate() != 1)
+                            throw new SQLException("Unexpected number of affected rows!");
+                    } else {
+                        insertBalance.setString(1, target.toString());
+                        insertBalance.setInt(2, amount);
+
+                        if (insertBalance.executeUpdate() != 1)
+                            throw new SQLException("Unexpected number of affected rows!");
+                    }
+
+                    connection.commit();
+
+                    success = true;
+                }
+            } catch (SQLException exception) {
+                this.getLogger().warning("SQLException while transferring currency!");
+                exception.printStackTrace();
+
+                try {
+                    connection.rollback();
+                } catch (SQLException exception2) {
+                    this.getLogger().warning("SQLException while rolling back transaction!");
+                    exception2.printStackTrace();
+                }
+            } finally {
+                connection.setAutoCommit(true);
             }
-
-            this.db.commit();
-
-            success = true;
-        } catch (SQLException exception) {
-            this.getLogger().warning("SQLException while transferring currency!");
-            exception.printStackTrace();
-
-            try {
-                if (this.db != null)
-                    this.db.rollback();
-            } catch (SQLException exception2) {
-                this.getLogger().warning("SQLException while rolling back transaction!");
-                exception2.printStackTrace();
-            }
-        } finally {
-            this.db.setAutoCommit(true);
         }
 
         if (!success)
